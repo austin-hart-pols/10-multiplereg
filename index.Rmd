@@ -27,6 +27,12 @@ output:
     dev = 'svglite'
   )
   xaringanExtra::use_panelset()
+  
+  library(tidyverse)
+  library(haven)
+  library(modelsummary)
+  library(gt)
+  df <- read_dta('obamasdog.dta')
 ```
 
 
@@ -42,175 +48,360 @@ knitr::include_graphics("assets/classlogo.png")
 .pull-right[
 # 01 - Introductions
 
-- Purpose of the course
+- Assessing causal claims
 
-- "Basement Tapes" discussion
-
-- Syllabus, etc
-
-- Scientific inquiry
+- 
 
 ]
 
 
 ---
-# What's the purpose of this course?
+# Assessing the validity of causal claims 
 
 .pull-left[
-### Introduce empirical research
+### The claim
+> I argue that owning a Kindle causes individuals to spend more money on Amazon.com. 
 
-- **STATISTICS**
-  - Field concerned with collecting and analyzing data  
-  - Focused on variation and uncertainty
+### Baseline evidence
 
-- **THE RESEARCH PROCESS**  
-  - Roots in the scientific project  
-  - From question to findings  
-  - Evaluating research
+- Is there evidence of correlation?
+  - *if NO: stop here.* There is no basis for causal inference.
+  - *if YES: It could be causal.* Proceed to alternatives.
+]
 
+.pull-right[
+### Alternative explanations:  
+
+- **Coincidence: cosmic happenstance?** 
+  Is there a mechanism to explain the link from Kindle to spending?
+  
+- **Bias due to reverse causality** $X \leftarrow Y$  
+  Could Amazon spending be the cause of Kindle ownership?
+  
+- **Bias due to confounding** $X \leftarrow Z \rightarrow Y$   
+  Is there something fundamentally different about owners/non-owners that also impacts Amazon.com spending?
+
+]
+
+---
+# Examples: work through together
+
+For the articles by Cohen and Dupas and Diana Mutz, identify:
+
+- Central question
+- Motivation  
+- Research design (and role of design)
+- Findings  
+
+
+---
+# Role of research design
+
+- Experiments
+  - Randomize unit's exposure to treatment
+  - Control to ensure comparability
+
+- Observational studies
+  - Careful case selection  
+  - Condition on observables, (e.g., multiple regression)
+
+
+---
+class: inverse, middle
+# Multiple regression
+### Conditioning on observables
+
+
+---
+# Linear regression overview
+
+- Assessing the relationship between:
+  - continuous outcome variable (Y)
+  - continuous exposure variable (X)
+
+- OLS regression and line of best fit
+  - OLS line minimizes squared error
+  - Represents mean of $Y$ conditional on $X$
+
+- Key findings (typically)
+  - Slope coefficient as expected change in $\bar{Y}$ for unit-increase in $X$
+  - Statistical significance of slope
+  
+
+---
+# PRF and SRF
+
+.pull-left[
+### PRF
+
+> Assume $Y_i$ is a linear function of $X_i$ for each unit, $i$, in the population. Define the impact of $X$ on $Y$ using:
+$$
+Y_i = \beta_0 + \beta_1 X_i + e_i
+$$
+
+- Key parameter: Slope
+  - $\beta_1 = E(\Delta Y | \Delta X)$
+  - Expected change in mean of Y conditional on a change in X.
+
+- The error term $e_i$
+  - distance from point to line $Y_i - (\beta_0 + \beta_1 X_i)$
+  - variation in $Y$ not explained by $X$
 
 ]
 
 .pull-right[
-### Support University mission
+### SRF
 
-- Research is the best of what we do
+> Use the sample data to estimate PRF: 
+$$
+Y_i = b_0 + b_1 X_i + e_i
+$$
 
-- Asking and answering questions is still a radical act!
 
-- Scientific inquiry *can* support and strengthen free-thinking society
+- SRF: $b_0 + b_1 X_i$
+  - estimate of PRF
+  - $b_1$ unbiased estimator of $\beta_1$
+
+- Set hypotheses
+  - $H_A: ~ \beta_1 \neq 0$
+  - $H_0: ~ \beta_1 = 0$  
+  
+- Reject $H_0$ if $p < 0.05$
+
+
+---
+# Procedure in R
+
+.pull-left[
+```{r, echo=T, eval=F}
+# Estimate
+  e1 <- lm(ObamaAdv ~ PetDog, data = df)
+
+# Table
+  stargazer(e1, type = 'text', keep.stat = "n")
+```
+]
+
+.pull-right[
+```{r, eval=T, echo=F}
+# Estimate
+  e1 <- lm(ObamaAdv ~ PetDog, data = df)
+# Table of results
+  modelsummary(e1, gof_map = c('nobs'), stars = TRUE, output = 'gt')
+```
+
+  Dog owners rate Obama 9 points *less favorably* on average than those without a pet dog. The relationship is significant at the 5% level.
+  
 ]
 
 
 ---
-# Basement Tapes
-### In-class discussion
+# Confunding bias
 
-1. What theory motivates Frantz’s study? Identify the key cause and the outcome he seeks to explain.  
-2. What did Frantz know from prior studies, and why were those findings seen as incomplete or insufficient?  
-3. How does Frantz test his core hypothesis? Be specific about the design of his elaborate study.  
-4. What do his results show? What are we to make of the findings? 
+> Estimate = Estimand + Noise + Bias
 
-For reference: [podcast](https://www.pushkin.fm/podcasts/revisionist-history/the-basement-tapes#play) (S2E10) and [study results](https://www.ahajournals.org/doi/pdf/10.1161/01.atv.9.1.129)
+- A confounder, $Z$, is a common cause of $X$ and $Y$
 
----
-# Get to know the course
+- Confounders induce bias, pulling the estimate, $b_1$, away from the true estimand, $\beta_1$
 
-- Let's visit the [living course syllabus](https://docs.google.com/document/d/1V5JLruDU9m9_eSnQqXQZ5-yDZCGlc9GZOQsVNcf3C7Q/edit?usp=sharing)
+- Mitigate bias with:
+  - Control (e.g., experimental control)
+  - Conditioning (e.g., multiple regression)
 
-- Expectations for class  
-  - We begin on time  
-  - Take notes and ask questions  
-  - Leave Slacks, chats, etc. behind
-
-- Outside of class  
-  - Do the reading  
-  - Give yourself time to do assignments  
-  - Be in touch!  
-
----
-class: inverse, middle
-
-# Foundations of scientific inquiry
-
-1. Where does science come from?  
-2. What defines scientific research?  
 
 
 ---
-# Origins of the modern scientific project
+# Unconditional OLS
 
 .pull-left[
+- Unconditional model assumes:
+$$
+Y_i = \beta_0 + \beta_1 X_i + e_i
+$$
 
-```{r, out.width="70%"}
-knitr::include_graphics("assets/bacon.jpg")
+- Assumes that the gray area is the *unique* correlation b/w $X$ and $Y$.
+]
+
+.pull-right[
+
+```{r, engine='tikz', out.width='70%'}
+
+	\def\firstcircle{(90:.75cm) circle (1cm)}
+	\def\secondcircle{(210:.75cm) circle (1cm)}
+	\def\thirdcircle{(330:.75cm) circle (1cm)}	
+	
+	\def\mono{(330:1.25cm) circle (.5cm)}	
+	\def\exog{(25:1.25cm) circle (.75cm)}
+	\def\mc{(250:.1cm) circle (1cm)}
+	
+	\begin{tikzpicture}
+		\begin{scope}
+			\begin{scope}[even odd rule]
+				\clip \firstcircle;
+				\fill[blue!80!white] \firstcircle;
+			\end{scope}
+			
+			\begin{scope}[even odd rule]
+				\clip \secondcircle;
+				\fill[red!80!black] \secondcircle;
+			\end{scope}
+			
+			\begin{scope}
+				\clip \firstcircle;
+				\clip \secondcircle;
+				\fill[gray] \secondcircle;
+			\end{scope}
+      		
+			\draw \firstcircle node[text=black,above] {$Y$};
+			\draw \secondcircle node [text=black,below left] {$X$};
+			\draw \thirdcircle node [text=black,below right] {$Z$};
+    		\end{scope}
+	\end{tikzpicture}
+
 ```
 
 ]
 
+---
+# Confounding bias in OLS
+
+
+.pull-left[
+- Assume $Y$ is a function of $X$ and $Z$:
+
+$$
+Y_i = \beta_0 + \beta_1 X_i + \beta_2 Z_i + e_i
+$$
+
+- But you ignore $Z$ and estimate:
+
+$$
+Y_i = \beta_0 + \beta^* _1 X_i + e_i
+$$
+
+- Then $\beta^* _1$ includes:
+  - $\beta_1$: association b/w X and Y (magenta) 
+  - **BIAS**: association b/w X and Z and Y (black)
+
+]
+
 .pull-right[
 
-### Bacon's new empiricism
+```{r, engine='tikz', out.width='70%'}
 
-- Knowledge through observation and experimentation
+	\def\firstcircle{(90:.75cm) circle (1cm)}
+	\def\secondcircle{(210:.75cm) circle (1cm)}
+	\def\thirdcircle{(330:.75cm) circle (1cm)}	
+	
+	\def\mono{(330:1.25cm) circle (.5cm)}	
+	\def\exog{(25:1.25cm) circle (.75cm)}
+	\def\mc{(250:.1cm) circle (1cm)}
+	
+	
+	\begin{tikzpicture}
+		\begin{scope}
+			\begin{scope}[even odd rule]
+				\clip \thirdcircle (-2,-2) rectangle (2,2);
+				\fill[blue!80!white] \firstcircle;
+			\end{scope}
+			
+			\begin{scope}[even odd rule]
+				\clip \firstcircle (-2,-2) rectangle (2,2);
+				\fill[yellow] \thirdcircle;
+			\end{scope}
+			
+			\begin{scope}[even odd rule]
+				\clip \firstcircle (-2,-2) rectangle (2,2);
+				\clip \secondcircle;
+				\fill[red!80!black] \secondcircle;
+			\end{scope}
+			
+			\begin{scope}
+				\clip \firstcircle;
+				\clip \thirdcircle;
+				\fill[green!80!black] \thirdcircle;
+			\end{scope}
+			
+			\begin{scope}
+				\clip \secondcircle;
+				\clip \thirdcircle;
+				\fill[orange!80!black] \secondcircle;
+			\end{scope}
+			
+			\begin{scope}
+				\clip \firstcircle;
+				\clip \secondcircle;
+				\fill[magenta!80!black] \secondcircle;
+			\end{scope}
+			
+			\begin{scope}
+				\clip \firstcircle;
+				\clip \secondcircle;
+				\fill[black] \thirdcircle;
+			\end{scope}   
+			     		
+			\draw \firstcircle node[text=black,above] {$Y$};
+			\draw \secondcircle node [text=black,below left] {$X$};
+			\draw \thirdcircle node [text=black,below right] {$Z$};
+    		\end{scope}
+	\end{tikzpicture}
 
-- Inductive reasoning
-  - Move from specific to general 
-  - Probabilistic claims    
-  - Conclusions open to new evidence
-  
-- Progress by rejecting bad ideas 
+```
+
+]
+
+
+
+---
+# OLS and conditional effects
+
+Worried that Z is a confounder? Add it to the model!
+
+$$
+Y_i = \beta_0 + \beta_1 X_i + \beta_2 Z_i + e_i
+$$
+
+Conditional slope coefficient, $\beta_1$
+- Expected value of $Y$ increases/decreases by $\beta_1$ for unit-increase in $X$
+- **...conditional on Z**
+
+
+---
+# Implementation in R
+
+.pull-left[
+
+```{r mreg1,echo=TRUE,eval=FALSE}
+# Unconditional estimate
+  e1 = lm(ObamaAdv ~ PetDog, data = df)
+
+# Conditional estimate
+  e2 = lm(ObamaAdv ~ PetDog + PetCat + IdeologyLR + Age, data = df)
+
+# Generate table with both
+  stargazer(e1, e2, type = 'text', keep.stat = 'n')
+```
+]
+
+.pull-right[
+
+```{r, eval=T, echo=F}
+# Estimate
+  mods <- 
+    list(
+      `(1)` = lm(ObamaAdv ~ PetDog, data = df),
+      `(2)` = lm(ObamaAdv ~ PetDog + PetCat + IdeologyLR + Age, data = df)
+    )
+# Table of results
+  modelsummary(mods, gof_map = c('nobs'), stars = TRUE, output = 'gt')
+```
 
 ]
 
 ---
-# Logic and structure of scientific inquiry
+# Interpretation
 
-.panelset[
-.panel[.panel-name[Process]
-
-- Question and expectations
-
-- Study 
-  - Research design (plan)  
-  - Data collection  
-  - Analysis  
-  
-- Report findings  
-
-- New questions
-
-]
-
-.panel[.panel-name[Question]
-
-.pull-left[ 
-- Study "effects of causes"
-  - Exposure variable: cause, $X$
-  - Outcome variable: effect, $Y$
-
-- Theory: what we *think* we know about $X \rightarrow Y$
-
-- Hypotheses: observable implications of theory
-]
-
-.pull-right[
-
-> **Theories** are general stories about the way things work. 
-
-> **Hypotheses** are specific predictions, derived from theory, about what we should see in the data.
-
-]
-]
-
-.panel[.panel-name[Study]
-
-- Research design
-  - *Experiment (RCT)*: the researcher exposes units to different values of treatment at random.    
-  - *Observational*: the researcher observes and records values of the variables as they are.  
-
-- Data collection  
-
-- Statistical analysis  
-  - Characterize the relationship  
-  - Is it systematic? 
-
-]
-
-.panel[.panel-name[Report]
-
-- Answer your question given the analysis
-
-- Consider the validity of your conclusion  
-  - Internal validity: have you ruled out alternative explanations and sources of bias?  
-  - External validity: do the results generalize to other cases, places, treatments, and outcomes?
-
-- What do your findings mean for extant theory?
-
-]
-]
-
-
+> On average, and controlling for cat ownership, age, and political ideology, dog owners rate Obama about 5-points *less favorably* than McCain. Although this estimate is smaller than in the unconditional model, it remains significant at the 5% level. 
 
 
 ---
