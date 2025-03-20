@@ -46,11 +46,14 @@ knitr::include_graphics("assets/classlogo.png")
 ]
 
 .pull-right[
-# 01 - Introductions
+# 10 - Multiple regression
 
 - Assessing causal claims
 
-- 
+- Multiple regression
+  - Regression review  
+  - Where's the bias?  
+  - Statistical controls
 
 ]
 
@@ -60,13 +63,13 @@ knitr::include_graphics("assets/classlogo.png")
 
 .pull-left[
 ### The claim
-> I argue that owning a Kindle causes individuals to spend more money on Amazon.com. 
+> Owning a Kindle causes individuals to spend more money on Amazon.com. 
 
 ### Baseline evidence
 
-- Is there evidence of correlation?
-  - *if NO: stop here.* There is no basis for causal inference.
-  - *if YES: It could be causal.* Proceed to alternatives.
+Is there evidence of correlation?  
+- *if NO: stop here.* There is no basis for causal inference.  
+- *if YES: It could be causal.* Proceed.
 ]
 
 .pull-right[
@@ -132,6 +135,7 @@ class: inverse, middle
 # PRF and SRF
 
 .pull-left[
+
 ### PRF
 
 > Assume $Y_i$ is a linear function of $X_i$ for each unit, $i$, in the population. Define the impact of $X$ on $Y$ using:
@@ -140,16 +144,14 @@ Y_i = \beta_0 + \beta_1 X_i + e_i
 $$
 
 - Key parameter: Slope
-  - $\beta_1 = E(\Delta Y | \Delta X)$
-  - Expected change in mean of Y conditional on a change in X.
 
-- The error term $e_i$
-  - distance from point to line $Y_i - (\beta_0 + \beta_1 X_i)$
-  - variation in $Y$ not explained by $X$
+- The error term: variation in $Y$ not explained by $X$
 
 ]
 
+
 .pull-right[
+
 ### SRF
 
 > Use the sample data to estimate PRF: 
@@ -158,16 +160,13 @@ Y_i = b_0 + b_1 X_i + e_i
 $$
 
 
-- SRF: $b_0 + b_1 X_i$
-  - estimate of PRF
+- SRF: estimate of PRF
   - $b_1$ unbiased estimator of $\beta_1$
 
-- Set hypotheses
-  - $H_A: ~ \beta_1 \neq 0$
-  - $H_0: ~ \beta_1 = 0$  
+- Set hypotheses: $H_0: ~ \beta_1 = 0$  
   
 - Reject $H_0$ if $p < 0.05$
-
+]
 
 ---
 # Procedure in R
